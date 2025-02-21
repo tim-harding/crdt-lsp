@@ -17,7 +17,7 @@ impl LanguageServer for Backend {
             .append(true)
             .open("/home/tim/Documents/temp/log.txt")
             .unwrap();
-        file.write_all(format!("initialize: {params:?}").into_bytes().as_slice())
+        file.write_all(format!("initialize: {params:#?}\n").into_bytes().as_slice())
             .unwrap();
         Ok(InitializeResult {
             capabilities: ServerCapabilities {
@@ -35,8 +35,12 @@ impl LanguageServer for Backend {
             .append(true)
             .open("/home/tim/Documents/temp/log.txt")
             .unwrap();
-        file.write_all(format!("initialized: {params:?}").into_bytes().as_slice())
-            .unwrap();
+        file.write_all(
+            format!("initialized: {params:#?}\n")
+                .into_bytes()
+                .as_slice(),
+        )
+        .unwrap();
 
         self.client
             .log_message(MessageType::INFO, "server initialized!")
@@ -52,7 +56,7 @@ impl LanguageServer for Backend {
             .append(true)
             .open("/home/tim/Documents/temp/log.txt")
             .unwrap();
-        file.write_all(format!("did_open: {params:?}").into_bytes().as_slice())
+        file.write_all(format!("did_open: {params:#?}\n").into_bytes().as_slice())
             .unwrap();
     }
 
@@ -61,7 +65,7 @@ impl LanguageServer for Backend {
             .append(true)
             .open("/home/tim/Documents/temp/log.txt")
             .unwrap();
-        file.write_all(format!("did_close: {params:?}").into_bytes().as_slice())
+        file.write_all(format!("did_close: {params:#?}\n").into_bytes().as_slice())
             .unwrap();
     }
 
@@ -70,7 +74,7 @@ impl LanguageServer for Backend {
             .append(true)
             .open("/home/tim/Documents/temp/log.txt")
             .unwrap();
-        file.write_all(format!("did_change: {params:?}").into_bytes().as_slice())
+        file.write_all(format!("did_change: {params:#?}\n").into_bytes().as_slice())
             .unwrap();
         self.client
             .log_message(MessageType::ERROR, format!("{params:?}"))
@@ -88,17 +92,11 @@ async fn main_async() {
     let stdout = tokio::io::stdout();
 
     let (service, socket) = LspService::new(|client| Backend { client });
-    let mut file = OpenOptions::new()
-        .append(true)
+    let file = OpenOptions::new()
+        .write(true)
+        .truncate(true)
         .open("/home/tim/Documents/temp/log.txt")
         .unwrap();
-    file.write_all(format!("pls work before").into_bytes().as_slice())
-        .unwrap();
+    drop(file);
     Server::new(stdin, stdout, socket).serve(service).await;
-    let mut file = OpenOptions::new()
-        .append(true)
-        .open("/home/tim/Documents/temp/log.txt")
-        .unwrap();
-    file.write_all(format!("pls work after").into_bytes().as_slice())
-        .unwrap();
 }
