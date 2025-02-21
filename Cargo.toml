@@ -5,5 +5,5 @@ edition = "2024"
 
 [dependencies]
 loro = "1.4.1"
-tokio = { version = "1.43.0", features = ["rt-multi-thread"] }
+tokio = { version = "1.43.0", features = ["io-std", "rt-multi-thread"] }
 tower-lsp = "0.20.0"
