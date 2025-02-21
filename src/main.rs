@@ -22,6 +22,8 @@ impl LanguageServer for Backend {
     async fn shutdown(&self) -> Result<()> {
         Ok(())
     }
+
+    async fn did_change(&self, params: DidChangeTextDocumentParams) {}
 }
 
 fn main() {
