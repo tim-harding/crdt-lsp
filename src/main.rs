@@ -24,6 +24,28 @@ use webrtc::peer_connection::math_rand_alpha;
 use webrtc::peer_connection::peer_connection_state::RTCPeerConnectionState;
 use webrtc::peer_connection::sdp::session_description::RTCSessionDescription;
 
+// NOTE:
+// Potential issue: Peers opening a file that has different local contents.
+// Live Share handles this by peers editing an in-memory version of the host's
+// files, so the documents don't actually exist in the filesystem.
+// Some LSP requests like go to definition and hover probably need to be
+// forwarded to the host, so there might need to be a distinction between what
+// the host LSP does and what the client LSPs do.
+//
+// The LSP solution is interesting but doesn't allow peers to navigate file
+// system, doesn't sync cursors, doesn't forward LSP requests, etc.
+//
+// Maybe CRDT FUSE filesystem? Although that would be limited to Linux.
+//
+// Another option: Spawn shared server to edit on. Provide an easy way to mirror
+// dotfiles and use NVIM_APPNAME when opening remote session. Also provide
+// utilities for syncing cursor locations, selection highlights, and buffer
+// contents using CRDTs for collaboration. Consider how to provide key
+// responsiveness for remote editor. Maybe SSHFS of shared server plus the CRDT
+// utilities would be a good combination of local and remote, plus shared
+// filesystem means Neovim-specific integration is a progressive enhancement and
+// other editors are still supported.
+
 #[derive(Debug)]
 struct Backend {
     client: Client,
