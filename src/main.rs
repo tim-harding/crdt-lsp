@@ -12,18 +12,17 @@ use tower_lsp::lsp_types::*;
 use tower_lsp::{Client, LanguageServer, LspService, Server};
 
 use tokio::time::Duration;
+use webrtc::api::APIBuilder;
 use webrtc::api::interceptor_registry::register_default_interceptors;
 use webrtc::api::media_engine::MediaEngine;
-use webrtc::api::APIBuilder;
-use webrtc::data_channel::data_channel_message::DataChannelMessage;
 use webrtc::data_channel::RTCDataChannel;
+use webrtc::data_channel::data_channel_message::DataChannelMessage;
 use webrtc::ice_transport::ice_server::RTCIceServer;
 use webrtc::interceptor::registry::Registry;
 use webrtc::peer_connection::configuration::RTCConfiguration;
 use webrtc::peer_connection::math_rand_alpha;
 use webrtc::peer_connection::peer_connection_state::RTCPeerConnectionState;
 use webrtc::peer_connection::sdp::session_description::RTCSessionDescription;
-
 
 #[derive(Debug)]
 struct Backend {
@@ -33,12 +32,6 @@ struct Backend {
 #[tower_lsp::async_trait]
 impl LanguageServer for Backend {
     async fn initialize(&self, params: InitializeParams) -> Result<InitializeResult> {
-        let mut file = OpenOptions::new()
-            .append(true)
-            .open("/home/tim/Documents/temp/log.txt")
-            .unwrap();
-        file.write_all(format!("initialize: {params:#?}\n").into_bytes().as_slice())
-            .unwrap();
         Ok(InitializeResult {
             capabilities: ServerCapabilities {
                 text_document_sync: Some(TextDocumentSyncCapability::Kind(
@@ -51,17 +44,6 @@ impl LanguageServer for Backend {
     }
 
     async fn initialized(&self, params: InitializedParams) {
-        let mut file = OpenOptions::new()
-            .append(true)
-            .open("/home/tim/Documents/temp/log.txt")
-            .unwrap();
-        file.write_all(
-            format!("initialized: {params:#?}\n")
-                .into_bytes()
-                .as_slice(),
-        )
-        .unwrap();
-
         self.client
             .log_message(MessageType::INFO, "server initialized!")
             .await;
@@ -71,31 +53,11 @@ impl LanguageServer for Backend {
         Ok(())
     }
 
-    async fn did_open(&self, params: DidOpenTextDocumentParams) {
-        let mut file = OpenOptions::new()
-            .append(true)
-            .open("/home/tim/Documents/temp/log.txt")
-            .unwrap();
-        file.write_all(format!("did_open: {params:#?}\n").into_bytes().as_slice())
-            .unwrap();
-    }
+    async fn did_open(&self, params: DidOpenTextDocumentParams) {}
 
-    async fn did_close(&self, params: DidCloseTextDocumentParams) {
-        let mut file = OpenOptions::new()
-            .append(true)
-            .open("/home/tim/Documents/temp/log.txt")
-            .unwrap();
-        file.write_all(format!("did_close: {params:#?}\n").into_bytes().as_slice())
-            .unwrap();
-    }
+    async fn did_close(&self, params: DidCloseTextDocumentParams) {}
 
     async fn did_change(&self, params: DidChangeTextDocumentParams) {
-        let mut file = OpenOptions::new()
-            .append(true)
-            .open("/home/tim/Documents/temp/log.txt")
-            .unwrap();
-        file.write_all(format!("did_change: {params:#?}\n").into_bytes().as_slice())
-            .unwrap();
         self.client
             .log_message(MessageType::ERROR, format!("{params:?}"))
             .await;
@@ -108,6 +70,7 @@ fn main() -> anyhow::Result<()> {
 }
 
 async fn main_async() -> anyhow::Result<()> {
+    /*
     // Everything below is the WebRTC-rs API! Thanks for using it ❤️.
 
     // Create a MediaEngine object to configure the supported codec
@@ -249,6 +212,7 @@ async fn main_async() -> anyhow::Result<()> {
     peer_connection.close().await?;
 
     Ok(())
+    */
 
     let stdin = tokio::io::stdin();
     let stdout = tokio::io::stdout();
@@ -261,13 +225,6 @@ async fn main_async() -> anyhow::Result<()> {
 
     let app = Router::new().route("/", post(handle_post));
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
-
-    let file = OpenOptions::new()
-        .write(true)
-        .truncate(true)
-        .open("/home/tim/Documents/temp/log.txt")
-        .unwrap();
-    drop(file);
 
     let axum_handle = tokio::spawn(async {
         axum::serve(listener, app).await.unwrap();
